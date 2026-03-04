@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node / Next
+node_modules/
+.next/
+out/
+
+# Electron build artifacts
+desktop/dist/
+dist/
+
+# Logs / pids
+logs/*
+!logs/.gitkeep
+
+*.log
+*.pid
+
+# OS
+.DS_Store
+
+# Local storage artifacts
+storage/embeddings/
+backend/storage/embeddings/
+
+# App bundles (built)
+*.app/

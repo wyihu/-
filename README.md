@@ -131,3 +131,15 @@ docker compose up --build
 - [ ] Renamer 改成不移动原文件：复制/软链策略
 - [ ] 加任务队列（Redis/RQ/Celery）与持久化
 - [ ] 前端 Library 做成可播放、可编辑标签并保存
+
+## macOS 桌面 App（双击启动）
+
+项目根目录内已生成：`Video Clip Tagger.app`
+
+- 双击 `Video Clip Tagger.app` 会执行 `scripts/app_start.sh`
+- 自动尝试启动：Ollama（如未运行）、Backend（8000）、Frontend（3000）并打开浏览器
+
+说明：
+- `.app` 默认假设它放在仓库目录旁边/仓库目录内；如果你把 `.app` 移到别处，可设置环境变量：
+  `VIDEO_CLIP_TAGGER_ROOT=/path/to/video-clip-tagger`
+- 图标文件在 `assets/icon.icns`（当前为占位符，请替换为真实 .icns）

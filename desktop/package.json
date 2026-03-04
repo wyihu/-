@@ -1,0 +1,36 @@
+{
+  "name": "video-clip-tagger-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "main": "main.js",
+  "description": "Video Clip Tagger Desktop (Electron wrapper)",
+  "scripts": {
+    "dev": "electron .",
+    "build": "electron-builder --mac dmg",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "devDependencies": {
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "ai.videocliptagger",
+    "productName": "Video Clip Tagger",
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "assets/icon.icns"
+    },
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*",
+      "runtime_bins.js"
+    ]
+  }
+}

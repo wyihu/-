@@ -1,0 +1,132 @@
+/Users/ye/projects/video-clip-tagger
+├── assets
+│   └── assets/icon.icns
+├── backend
+│   ├── backend/backend
+│   │   ├── backend/backend/api
+│   │   │   ├── backend/backend/api/__init__.py
+│   │   │   └── backend/backend/api/main.py
+│   │   ├── backend/backend/embedding
+│   │   │   ├── backend/backend/embedding/__init__.py
+│   │   │   ├── backend/backend/embedding/build_index.py
+│   │   │   ├── backend/backend/embedding/embedder.py
+│   │   │   ├── backend/backend/embedding/search.py
+│   │   │   └── backend/backend/embedding/vector_store.py
+│   │   ├── backend/backend/frame_extractor
+│   │   │   ├── backend/backend/frame_extractor/__init__.py
+│   │   │   └── backend/backend/frame_extractor/service.py
+│   │   ├── backend/backend/health
+│   │   │   ├── backend/backend/health/__init__.py
+│   │   │   ├── backend/backend/health/model_health.py
+│   │   │   └── backend/backend/health/system_health.py
+│   │   ├── backend/backend/indexer
+│   │   │   ├── backend/backend/indexer/__init__.py
+│   │   │   └── backend/backend/indexer/service.py
+│   │   ├── backend/backend/model_provider
+│   │   │   ├── backend/backend/model_provider/__init__.py
+│   │   │   ├── backend/backend/model_provider/base.py
+│   │   │   ├── backend/backend/model_provider/config.py
+│   │   │   ├── backend/backend/model_provider/deepseek_provider.py
+│   │   │   ├── backend/backend/model_provider/factory.py
+│   │   │   ├── backend/backend/model_provider/google_provider.py
+│   │   │   ├── backend/backend/model_provider/local_provider.py
+│   │   │   ├── backend/backend/model_provider/openai_provider.py
+│   │   │   └── backend/backend/model_provider/qwen_provider.py
+│   │   ├── backend/backend/renamer
+│   │   │   ├── backend/backend/renamer/__init__.py
+│   │   │   └── backend/backend/renamer/service.py
+│   │   ├── backend/backend/scanner
+│   │   │   ├── backend/backend/scanner/__init__.py
+│   │   │   └── backend/backend/scanner/service.py
+│   │   ├── backend/backend/tagger
+│   │   │   ├── backend/backend/tagger/__init__.py
+│   │   │   └── backend/backend/tagger/service.py
+│   │   ├── backend/backend/watcher
+│   │   │   ├── backend/backend/watcher/__init__.py
+│   │   │   └── backend/backend/watcher/watcher.py
+│   │   ├── backend/backend/__init__.py
+│   │   ├── backend/backend/cli.py
+│   │   ├── backend/backend/pipeline.py
+│   │   ├── backend/backend/settings.py
+│   │   └── backend/backend/types.py
+│   ├── backend/storage
+│   │   └── backend/storage/library
+│   ├── backend/video_clip_tagger.egg-info
+│   │   ├── backend/video_clip_tagger.egg-info/dependency_links.txt
+│   │   ├── backend/video_clip_tagger.egg-info/entry_points.txt
+│   │   ├── backend/video_clip_tagger.egg-info/PKG-INFO
+│   │   ├── backend/video_clip_tagger.egg-info/requires.txt
+│   │   ├── backend/video_clip_tagger.egg-info/SOURCES.txt
+│   │   └── backend/video_clip_tagger.egg-info/top_level.txt
+│   └── backend/pyproject.toml
+├── config
+│   └── config/models.yaml
+├── desktop
+│   ├── desktop/assets
+│   │   ├── desktop/assets/icon.icns
+│   │   └── desktop/assets/icon.png
+│   ├── desktop/renderer
+│   │   └── desktop/renderer/index.html
+│   ├── desktop/main.js
+│   ├── desktop/package-lock.json
+│   ├── desktop/package.json
+│   ├── desktop/preload.js
+│   └── desktop/runtime_bins.js
+├── docs
+│   └── docs/HANDOFF.md
+├── frontend
+│   ├── frontend/app
+│   │   ├── frontend/app/library
+│   │   │   └── frontend/app/library/page.tsx
+│   │   ├── frontend/app/settings
+│   │   │   └── frontend/app/settings/page.tsx
+│   │   ├── frontend/app/tagging
+│   │   │   └── frontend/app/tagging/page.tsx
+│   │   ├── frontend/app/globals.css
+│   │   ├── frontend/app/layout.tsx
+│   │   └── frontend/app/page.tsx
+│   ├── frontend/next-env.d.ts
+│   ├── frontend/next.config.js
+│   ├── frontend/package-lock.json
+│   ├── frontend/package.json
+│   ├── frontend/postcss.config.js
+│   ├── frontend/tailwind.config.js
+│   └── frontend/tsconfig.json
+├── logs
+│   ├── logs/backend.out
+│   ├── logs/desktop.electron.build.out
+│   ├── logs/desktop.electron.build.pid
+│   ├── logs/desktop.electron.dev.out
+│   ├── logs/desktop.npm.install.out
+│   ├── logs/desktop.npm.install2.out
+│   ├── logs/desktop.npm.install2.pid
+│   ├── logs/desktop.npm.install3.out
+│   ├── logs/desktop.npm.install3.pid
+│   ├── logs/frontend.install.out
+│   ├── logs/frontend.out
+│   ├── logs/pids.json
+│   ├── logs/start.run.out
+│   ├── logs/start.run.pid
+│   └── logs/test.txt
+├── scripts
+│   ├── scripts/app_start.sh
+│   ├── scripts/install.sh
+│   ├── scripts/start.sh
+│   └── scripts/stop.sh
+├── storage
+│   └── storage/library
+├── Video Clip Tagger.app
+│   └── Video Clip Tagger.app/Contents
+│       ├── Video Clip Tagger.app/Contents/MacOS
+│       │   └── Video Clip Tagger.app/Contents/MacOS/launch.sh
+│       ├── Video Clip Tagger.app/Contents/Resources
+│       │   └── Video Clip Tagger.app/Contents/Resources/icon.icns
+│       └── Video Clip Tagger.app/Contents/Info.plist
+├── .cursorrules
+├── AGENTS.md
+├── CODEX_CONTEXT.md
+├── docker-compose.yml
+├── Dockerfile
+├── PROJECT_DOC.md
+├── README.md
+└── SYSTEM_ARCHITECTURE.md

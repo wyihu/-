@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Video Clip Tagger</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial; }
+    #bar { display:flex; gap:18px; align-items:center; padding:10px 14px; background:#111; color:#fff; font-size:13px; }
+    .pill { display:flex; align-items:center; gap:8px; }
+    .dot { width:8px; height:8px; border-radius:99px; background:#666; }
+    .ok { background:#22c55e; }
+    .bad { background:#ef4444; }
+    #frame { width: 100%; height: calc(100vh - 42px); border:0; }
+    a { color:#fff; }
+  </style>
+</head>
+<body>
+  <div id="bar">
+    <div style="font-weight:600;">Video Clip Tagger</div>
+    <div class="pill"><span id="ollamaDot" class="dot"></span>Ollama: <span id="ollamaText">...</span></div>
+    <div class="pill"><span id="modelDot" class="dot"></span>Model: <span id="modelText">...</span></div>
+    <div class="pill"><span id="queueDot" class="dot"></span>Queue: <span id="queueText">...</span></div>
+    <div style="margin-left:auto; opacity:0.8;">UI: <a href="#" id="openUi">localhost:3000</a></div>
+  </div>
+  <iframe id="frame" src="http://127.0.0.1:3000" />
+
+  <script>
+    const api = window.vct?.apiBase || 'http://127.0.0.1:8000';
+    const ui = window.vct?.uiBase || 'http://127.0.0.1:3000';
+
+    document.getElementById('frame').src = ui;
+
+    document.getElementById('openUi').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.open(ui);
+    });
+
+    function set(dotId, textId, ok, text) {
+      const dot = document.getElementById(dotId);
+      dot.classList.remove('ok','bad');
+      dot.classList.add(ok ? 'ok' : 'bad');
+      document.getElementById(textId).textContent = text;
+    }
+
+    async function refresh() {
+      try {
+        const health = await fetch(api + '/health', { cache: 'no-store' }).then(r => r.json());
+        const ollOk = health?.details?.ollama?.status === 'running';
+        const modelMissing = health?.details?.ollama?.model === 'missing';
+        set('ollamaDot','ollamaText', ollOk, ollOk ? 'running' : 'offline');
+        set('modelDot','modelText', ollOk && !modelMissing, modelMissing ? 'missing' : 'ok');
+
+        const st = await fetch(api + '/status', { cache: 'no-store' }).then(r => r.json());
+        const qlen = (st?.queue || []).length;
+        set('queueDot','queueText', true, `${qlen} queued / running ${st?.running ?? 0}`);
+      } catch (e) {
+        set('ollamaDot','ollamaText', false, 'offline');
+        set('modelDot','modelText', false, 'unknown');
+        set('queueDot','queueText', false, 'unknown');
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 5000);
+  </script>
+</body>
+</html>

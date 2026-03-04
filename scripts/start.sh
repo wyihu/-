@@ -23,9 +23,8 @@ start_ollama() {
 
   if command -v ollama >/dev/null 2>&1; then
     log "Ollama: starting (ollama serve &)"
-    (nohup ollama serve >/dev/null 2>&1 & echo $! >"$PID_DIR/ollama.pid") || true
+    (nohup ollama serve >"$PID_DIR/ollama.out" 2>&1 & echo $! >"$PID_DIR/ollama.pid") || true
 
-    # wait a bit
     for i in {1..30}; do
       if is_ollama_running; then
         log "Ollama: running"
@@ -43,13 +42,19 @@ start_ollama() {
 start_backend() {
   log "Backend: starting uvicorn on :8000"
   cd "$ROOT_DIR"
-  (nohup uvicorn backend.api.main:app --host 0.0.0.0 --port 8000 >/dev/null 2>&1 & echo $! >"$PID_DIR/backend.pid")
+  (nohup python3 -m uvicorn backend.api.main:app --host 0.0.0.0 --port 8000 >"$PID_DIR/backend.out" 2>&1 & echo $! >"$PID_DIR/backend.pid")
 }
 
 start_frontend() {
   log "Frontend: starting Next.js dev server on :3000"
   cd "$ROOT_DIR/frontend"
-  (nohup npm run dev >/dev/null 2>&1 & echo $! >"$PID_DIR/frontend.pid")
+
+  if [ ! -d node_modules ]; then
+    log "Frontend: node_modules missing, running npm install"
+    npm install >"$PID_DIR/frontend.install.out" 2>&1
+  fi
+
+  (nohup npm run dev >"$PID_DIR/frontend.out" 2>&1 & echo $! >"$PID_DIR/frontend.pid")
 }
 
 write_pid_json() {
