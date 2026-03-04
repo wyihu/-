@@ -1,0 +1,76 @@
+Cursor AI Rules
+
+Project: Video Clip Tagger
+
+Purpose:
+This repository implements an AI-powered video asset organization system.
+The system automatically processes raw video clips and converts them into a structured asset library.
+
+Core Pipeline
+video
+↓
+frame extraction
+↓
+AI vision recognition
+↓
+tag generation
+↓
+rename
+↓
+library index
+
+Architecture Rules
+1 Maintain modular architecture.
+Do not merge modules with different responsibilities.
+Modules must remain separated:
+scanner
+frame_extractor
+model_provider
+tagger
+renamer
+indexer
+api
+
+2 AI Model Providers
+All AI model providers must implement the same interface:
+analyze_image(image_path)
+Return format:
+{ "scene": "", "action": "", "object": "" }
+Providers must remain interchangeable.
+
+3 File System Rules
+Incoming videos are placed in:
+~/ai-video-factory/clips
+Processed videos are stored in:
+storage/library
+Metadata file:
+storage/library/index.json
+Do not change this structure.
+
+4 Naming Convention
+Videos must be renamed using:
+action_id.mp4
+Example:
+pour_001.mp4
+drink_002.mp4
+
+5 Code Modification Rules
+Do not change existing pipeline order.
+Do not break compatibility with index.json.
+Avoid hardcoded paths.
+Use configuration files instead.
+
+6 Performance Expectations
+Processing target:
+100 videos < 1 minute
+1000 videos < 5 minutes
+Support parallel processing when possible.
+
+7 Future Extensions
+Planned features:
+directory watcher
+video embedding search
+duplicate detection
+quality filtering
+automatic video editing
+New features must be implemented as independent modules.

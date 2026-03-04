@@ -1,0 +1,33 @@
+[project]
+name = "video-clip-tagger"
+version = "0.1.0"
+description = "Video Clip Tagger: auto-frame extraction + multimodel tagging + indexing"
+requires-python = ">=3.10"
+authors = [{name="Claw"}]
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "pydantic>=2.6",
+  "pydantic-settings>=2.2",
+  "python-multipart>=0.0.9",
+  "pyyaml>=6.0.1",
+  "typer>=0.12",
+  "rich>=13.7",
+  "httpx>=0.27",
+  "numpy>=1.26",
+  "faiss-cpu>=1.8.0",
+  "sentence-transformers>=3.0.1",
+  "watchdog>=4.0.0",
+]
+
+[project.scripts]
+video-clip-tagger = "backend.cli:app"
+
+[tool.uv]
+
+[tool.ruff]
+line-length = 100
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

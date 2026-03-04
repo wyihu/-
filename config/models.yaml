@@ -1,0 +1,29 @@
+# Switch provider by editing `active_provider` (or via API POST /models/switch)
+active_provider: local
+
+providers:
+  local:
+    kind: local
+    provider: ollama
+    model: llava:13b
+    host: http://localhost:11434
+
+  openai:
+    kind: openai
+    api_key: ${OPENAI_API_KEY}
+    model: gpt-4o-mini
+
+  google:
+    kind: google
+    api_key: ${GOOGLE_API_KEY}
+    model: gemini-1.5-flash
+
+  deepseek:
+    kind: deepseek
+    api_key: ${DEEPSEEK_API_KEY}
+    model: deepseek-chat
+
+  qwen:
+    kind: qwen
+    api_key: ${QWEN_API_KEY}
+    model: qwen2.5-vl
