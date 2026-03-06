@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+data/
+apps/desktop/node_modules/
+apps/desktop/dist/
