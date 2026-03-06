@@ -8,6 +8,7 @@
 - Provider 未选：提示“请先选择 Provider”。
 - Model/Workflow 未选：提示“请先选择模型和工作流”。
 - Prompt 非法 JSON：提示“Prompt JSON 格式错误”。
+- max_retries 必须是 0-10 的整数。
 
 ## 任务回退与重试
 - 提交任务时可配置：

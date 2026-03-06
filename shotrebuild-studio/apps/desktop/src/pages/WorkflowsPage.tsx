@@ -111,12 +111,17 @@ export function WorkflowsPage() {
       return setError('Prompt JSON 格式错误')
     }
 
+    const retryNumber = Number(maxRetries || '0')
+    if (!Number.isInteger(retryNumber) || retryNumber < 0 || retryNumber > 10) {
+      return setError('max_retries 必须是 0-10 的整数')
+    }
+
     const submit = await api.submitProviderJob('comfyui', {
       workflow_id: Number(selectedWorkflowId),
       model_key: selectedModelKey,
       fallback_provider: fallbackProvider || undefined,
       fallback_model_key: fallbackModelKey || undefined,
-      max_retries: Number(maxRetries || '0'),
+      max_retries: retryNumber,
       prompt: parsedPrompt
     })
     setJobId(submit.job_id)
@@ -126,7 +131,11 @@ export function WorkflowsPage() {
 
   async function retryJob() {
     if (!jobId) return setError('请先提交任务')
-    const retried = await api.retryProviderJob(jobId, Number(maxRetries || '0'))
+    const retryNumber = Number(maxRetries || '0')
+    if (!Number.isInteger(retryNumber) || retryNumber < 0 || retryNumber > 10) {
+      return setError('max_retries 必须是 0-10 的整数')
+    }
+    const retried = await api.retryProviderJob(jobId, retryNumber)
     setJobId(retried.job_id)
     setJobStatus(retried.status)
     setJobError('')

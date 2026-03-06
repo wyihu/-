@@ -59,9 +59,9 @@ class ProviderJobSubmitRequest(BaseModel):
     model_key: str | None = None
     fallback_provider: str | None = None
     fallback_model_key: str | None = None
-    max_retries: int = 0
+    max_retries: int = Field(default=0, ge=0, le=10)
     prompt: dict = Field(default_factory=dict)
 
 
 class ProviderJobRetryRequest(BaseModel):
-    max_retries: int | None = None
+    max_retries: int | None = Field(default=None, ge=0, le=10)
