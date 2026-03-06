@@ -48,10 +48,14 @@ CREATE TABLE IF NOT EXISTS provider_jobs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     provider_id INTEGER,
     workflow_id INTEGER,
-    status TEXT DEFAULT 'pending',
+    provider_job_id TEXT,
+    status TEXT DEFAULT 'PENDING',
     request_json TEXT DEFAULT '{}',
     response_json TEXT DEFAULT '{}',
+    outputs_json TEXT DEFAULT '[]',
+    error_message TEXT DEFAULT '',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(provider_id) REFERENCES providers(id),
     FOREIGN KEY(workflow_id) REFERENCES workflows(id)
 );

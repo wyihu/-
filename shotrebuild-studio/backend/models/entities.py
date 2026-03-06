@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ProjectCreate(BaseModel):
@@ -33,3 +33,9 @@ class WorkflowCreate(BaseModel):
     workflow_key: str
     name: str
     definition_json: str = "{}"
+
+
+class ProviderJobSubmitRequest(BaseModel):
+    workflow_id: int | None = None
+    model_key: str | None = None
+    prompt: dict = Field(default_factory=dict)

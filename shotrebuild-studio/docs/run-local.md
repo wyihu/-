@@ -6,6 +6,7 @@ cd shotrebuild-studio
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ./backend
+export COMFYUI_BASE_URL=http://127.0.0.1:8188
 PYTHONPATH=. python -m uvicorn backend.api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.db.database import execute, fetch_all, init_db
@@ -7,12 +7,18 @@ from backend.models.entities import (
     AssetCreate,
     ProjectCreate,
     ProviderCreate,
+    ProviderJobSubmitRequest,
     ProviderModelCreate,
     WorkflowCreate,
 )
+from backend.services.provider_jobs import (
+    fetch_provider_job_outputs,
+    get_provider_job_status,
+    create_provider_job,
+)
 from backend.services.provider_registry import PROVIDERS
 
-app = FastAPI(title="ShotRebuild Studio Backend", version="0.1.1")
+app = FastAPI(title="ShotRebuild Studio Backend", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -59,8 +65,35 @@ def create_provider(provider: ProviderCreate) -> dict:
     return {"id": provider_id, **provider.model_dump()}
 
 
+@app.get("/providers/comfyui/health")
+def comfyui_health() -> dict:
+    provider = PROVIDERS.get("comfyui")
+    if not provider:
+        raise HTTPException(status_code=404, detail="ComfyUI provider not found")
+    return provider.health_check()
+
+
+@app.get("/providers/comfyui/models")
+def comfyui_models() -> list[dict]:
+    provider = PROVIDERS.get("comfyui")
+    if not provider:
+        raise HTTPException(status_code=404, detail="ComfyUI provider not found")
+    return provider.list_models()
+
+
 @app.get("/models")
-def list_models() -> list[dict]:
+def list_models(provider: str | None = Query(default=None)) -> list[dict]:
+    if provider:
+        return fetch_all(
+            """
+            SELECT m.id, p.name AS provider, m.provider_id, m.model_key, m.display_name, m.capabilities, m.is_default
+            FROM provider_models m
+            JOIN providers p ON p.id = m.provider_id
+            WHERE p.name = ?
+            ORDER BY m.id ASC
+            """,
+            (provider,),
+        )
     return fetch_all(
         """
         SELECT m.id, p.name AS provider, m.provider_id, m.model_key, m.display_name, m.capabilities, m.is_default
@@ -81,7 +114,18 @@ def create_model(model: ProviderModelCreate) -> dict:
 
 
 @app.get("/workflows")
-def list_workflows() -> list[dict]:
+def list_workflows(provider: str | None = Query(default=None)) -> list[dict]:
+    if provider:
+        return fetch_all(
+            """
+            SELECT w.id, p.name AS provider, w.provider_id, w.workflow_key, w.name, w.definition_json
+            FROM workflows w
+            LEFT JOIN providers p ON p.id = w.provider_id
+            WHERE p.name = ?
+            ORDER BY w.id ASC
+            """,
+            (provider,),
+        )
     return fetch_all(
         """
         SELECT w.id, p.name AS provider, w.provider_id, w.workflow_key, w.name, w.definition_json
@@ -130,8 +174,18 @@ def create_asset(asset: AssetCreate) -> dict:
 
 
 @app.post("/providers/{provider_name}/jobs")
-def submit_provider_job(provider_name: str, payload: dict) -> dict:
-    provider = PROVIDERS.get(provider_name)
-    if not provider:
-        raise HTTPException(status_code=404, detail="Provider not found")
-    return provider.submit_job(payload)
+def submit_provider_job(provider_name: str, request: ProviderJobSubmitRequest) -> dict:
+    payload = request.prompt
+    if request.model_key:
+        payload = {**payload, "model_key": request.model_key}
+    return create_provider_job(provider_name, payload, workflow_id=request.workflow_id)
+
+
+@app.get("/provider_jobs/{job_id}/status")
+def provider_job_status(job_id: int) -> dict:
+    return get_provider_job_status(job_id)
+
+
+@app.get("/provider_jobs/{job_id}/outputs")
+def provider_job_outputs(job_id: int) -> dict:
+    return fetch_provider_job_outputs(job_id)

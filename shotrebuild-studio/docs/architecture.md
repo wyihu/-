@@ -18,3 +18,8 @@
 - 后续接入点：
   - `backend/services/` 可新增适配器，调用旧版 frame_extractor/tagger 等能力。
   - `backend/api/` 逐步新增素材工厂操作接口并映射到旧模块。
+
+
+## ComfyUI 接入说明
+- `backend/providers/comfyui/provider.py` 已接入 ComfyUI HTTP API（health/models/submit/status/outputs）。
+- `backend/services/provider_jobs.py` 负责任务状态流转与 provider_jobs 落库。

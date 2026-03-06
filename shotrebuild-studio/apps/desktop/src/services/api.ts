@@ -6,7 +6,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     ...options
   })
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
+    const detail = await response.text()
+    throw new Error(`Request failed: ${response.status} ${detail}`)
   }
   return (await response.json()) as T
 }
@@ -16,12 +17,23 @@ export const api = {
   listProviders: () => request<any[]>('/providers'),
   createProvider: (payload: { name: string; provider_type: string }) =>
     request('/providers', { method: 'POST', body: JSON.stringify(payload) }),
-  listModels: () => request<any[]>('/models'),
+
+  comfyHealth: () => request<any>('/providers/comfyui/health'),
+  comfyModels: () => request<any[]>('/providers/comfyui/models'),
+
+  listModels: (provider?: string) => request<any[]>(provider ? `/models?provider=${provider}` : '/models'),
   createModel: (payload: { provider_id: number; model_key: string; display_name: string }) =>
     request('/models', { method: 'POST', body: JSON.stringify(payload) }),
-  listWorkflows: () => request<any[]>('/workflows'),
+
+  listWorkflows: (provider?: string) => request<any[]>(provider ? `/workflows?provider=${provider}` : '/workflows'),
   createWorkflow: (payload: { provider_id: number; workflow_key: string; name: string }) =>
     request('/workflows', { method: 'POST', body: JSON.stringify(payload) }),
+
+  submitProviderJob: (provider: string, payload: { workflow_id?: number; model_key?: string; prompt: Record<string, unknown> }) =>
+    request(`/providers/${provider}/jobs`, { method: 'POST', body: JSON.stringify(payload) }),
+  getProviderJobStatus: (jobId: number) => request<any>(`/provider_jobs/${jobId}/status`),
+  getProviderJobOutputs: (jobId: number) => request<any>(`/provider_jobs/${jobId}/outputs`),
+
   listProjects: () => request<any[]>('/projects'),
   createProject: (payload: { name: string; description: string }) =>
     request('/projects', { method: 'POST', body: JSON.stringify(payload) })
