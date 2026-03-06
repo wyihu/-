@@ -1,0 +1,8 @@
+:root { font-family: Inter, system-ui, sans-serif; }
+body { margin: 0; }
+.layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+aside { background: #0f172a; color: #fff; padding: 16px; }
+nav { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+nav a { color: #93c5fd; text-decoration: none; }
+main { padding: 20px; }
+input { margin-right: 8px; }
