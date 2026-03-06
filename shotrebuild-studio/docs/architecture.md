@@ -3,7 +3,7 @@
 ## 模块边界
 - `apps/desktop`: Tauri + React + TypeScript UI 层，仅负责页面和 API 调用。
 - `backend/api`: FastAPI 路由层。
-- `backend/services`: 业务编排层（本批次仅 provider 注册与 mock）。
+- `backend/services`: 业务编排层（本批次为 provider 注册 + SQLite 配置占位管理）。
 - `backend/providers`: Provider 抽象和实现层。
 - `backend/db`: SQLite 连接与 schema 初始化。
 - `workflows/comfyui`: 未来真实工作流定义接入位。
