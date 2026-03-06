@@ -16,7 +16,9 @@ PROVIDER_JOBS_REQUIRED_COLUMNS = {
     "fallback_model_key": "TEXT DEFAULT ''",
     "active_provider": "TEXT DEFAULT ''",
     "active_model_key": "TEXT DEFAULT ''",
+    "status_history_json": "TEXT DEFAULT '[]'",
 }
+
 
 
 def get_connection() -> sqlite3.Connection:

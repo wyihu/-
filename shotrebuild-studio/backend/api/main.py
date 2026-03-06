@@ -19,6 +19,7 @@ from backend.services.provider_jobs import (
     create_provider_job,
     fetch_provider_job_outputs,
     get_provider_job_status,
+    list_provider_jobs,
     retry_provider_job,
 )
 from backend.services.provider_registry import PROVIDERS
@@ -278,6 +279,10 @@ def submit_provider_job(provider_name: str, request: ProviderJobSubmitRequest) -
         max_retries=request.max_retries,
     )
 
+
+@app.get("/provider_jobs")
+def provider_jobs() -> list[dict]:
+    return list_provider_jobs()
 
 @app.post("/provider_jobs/{job_id}/retry")
 def retry_job(job_id: int, request: ProviderJobRetryRequest) -> dict:

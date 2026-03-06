@@ -18,10 +18,14 @@ npm install
 npm run dev
 ```
 
+若公司网络对 npm registry 有 403 限制：
+1. 联系网络管理员放行 `registry.npmjs.org`（或企业白名单镜像）；
+2. 或在可访问 npm 的网络环境执行 `npm install` 后打包 `node_modules` 供内网使用。
+
 ## 3) 启动桌面端（Tauri）
 ```bash
 cd shotrebuild-studio/apps/desktop
 npm run tauri:dev
 ```
 
-> 若本机缺少 Rust/Tauri 依赖，可先用 `npm run dev` 验证页面与 API 联通。
+> `tauri:dev` 当前使用 `cargo tauri dev`，需本机已安装 Rust/Tauri CLI。

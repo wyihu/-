@@ -23,27 +23,30 @@ Base URL: `http://127.0.0.1:8000`
 ## ComfyUI 接口
 - `GET /providers/comfyui/health`
 - `GET /providers/comfyui/models`
-- `POST /providers/comfyui/jobs`（通过 `POST /providers/{provider_name}/jobs`）
+- `POST /providers/comfyui/jobs`（经 `POST /providers/{provider_name}/jobs`）
 
-任务提交请求体示例：
-```json
-{
-  "workflow_id": 1,
-  "model_key": "sd_xxx.safetensors",
-  "fallback_provider": "kling",
-  "fallback_model_key": "kling/mock-1.6",
-  "max_retries": 2,
-  "prompt": {
-    "prompt": {}
-  }
-}
-```
+提交参数（支持自动回退与重试）：
+- `model_key`
+- `fallback_provider`
+- `fallback_model_key`
+- `max_retries`
+- `prompt`
 
-## 任务状态/输出/重试
+## 任务接口
+- `GET /provider_jobs`：任务列表（用于前端任务历史展示）
 - `GET /provider_jobs/{job_id}/status`
 - `GET /provider_jobs/{job_id}/outputs`
 - `POST /provider_jobs/{job_id}/retry`
 
-状态流转：`PENDING` → `RUNNING` → `SUCCEEDED` / `FAILED`；失败中间态含 `RETRYING`。
+## 状态流转与字段说明
+状态：`PENDING` → `RUNNING` → `SUCCEEDED` / `FAILED`；重试中：`RETRYING`
 
-`provider_jobs` 记录字段包含：`retry_count`、`max_retries`、`fallback_provider`、`fallback_model_key`、`error_message`。
+`provider_jobs` 关键字段：
+- `retry_count`: 当前累计重试次数
+- `max_retries`: 最大重试次数
+- `fallback_provider`: 备用 provider
+- `fallback_model_key`: 备用模型
+- `active_provider`: 本次执行实际 provider
+- `active_model_key`: 本次执行实际 model
+- `error_message`: 最后失败原因
+- `status_history_json`: 状态历史记录（时间、状态、说明）

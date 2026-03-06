@@ -52,6 +52,7 @@ export const api = {
   ) => request(`/providers/${provider}/jobs`, { method: 'POST', body: JSON.stringify(payload) }),
   retryProviderJob: (jobId: number, max_retries?: number) =>
     request(`/provider_jobs/${jobId}/retry`, { method: 'POST', body: JSON.stringify({ max_retries }) }),
+  listProviderJobs: () => request<any[]>('/provider_jobs'),
   getProviderJobStatus: (jobId: number) => request<any>(`/provider_jobs/${jobId}/status`),
   getProviderJobOutputs: (jobId: number) => request<any>(`/provider_jobs/${jobId}/outputs`),
 

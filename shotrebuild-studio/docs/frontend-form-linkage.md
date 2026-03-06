@@ -1,21 +1,23 @@
-# 前端联动、失败回退与重试说明
+# 前端联动、任务回退与重试说明
 
-## Provider / Model / Workflow 联动
-- 选择 provider 后，自动加载对应 model 与 workflow。
-- 不允许手动输入 provider_id，仅通过下拉框选择。
+## 联动规则
+- 先选择 Provider，再动态加载对应 Model / Workflow。
+- 不允许手动输入 provider_id。
 
-## 表单校验
-- Provider 未选中：提示“请先选择 Provider”。
-- Model/Workflow 未选中：提示“请先选择模型和工作流”。
+## 校验规则
+- Provider 未选：提示“请先选择 Provider”。
+- Model/Workflow 未选：提示“请先选择模型和工作流”。
 - Prompt 非法 JSON：提示“Prompt JSON 格式错误”。
-- Workflow 创建字段为空：提示 `workflow_key`/`name` 不能为空。
 
-## 任务失败与重试交互
-- 提交时支持设置：`fallback_provider`、`fallback_model_key`、`max_retries`。
-- 页面会轮询任务状态并展示失败原因。
-- 提供“重试任务”按钮触发 `/provider_jobs/{job_id}/retry`。
+## 任务回退与重试
+- 提交任务时可配置：
+  - `fallback_provider`
+  - `fallback_model_key`
+  - `max_retries`
+- 若主 provider/model 失败，后端自动按重试策略尝试并回退到备用方案。
 
-## Provider/Model/Workflow 管理
-- Provider 页：新增、启停更新、删除。
-- Model 页：新增、删除。
-- Workflow 页：新增、删除。
+## 页面展示
+- 实时轮询任务状态（2s）并显示 `PENDING/RUNNING/SUCCEEDED/FAILED/RETRYING`。
+- 失败时展示失败原因（error_message）。
+- 提供“重试任务”按钮，触发 `/provider_jobs/{job_id}/retry`。
+- 提供任务历史状态显示（`status_history_json`）与任务列表展示（含重试次数）。

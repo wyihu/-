@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS provider_jobs (
     fallback_model_key TEXT DEFAULT '',
     active_provider TEXT DEFAULT '',
     active_model_key TEXT DEFAULT '',
+    status_history_json TEXT DEFAULT '[]',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(provider_id) REFERENCES providers(id),
