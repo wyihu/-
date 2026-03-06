@@ -7,18 +7,23 @@ from backend.models.entities import (
     AssetCreate,
     ProjectCreate,
     ProviderCreate,
+    ProviderJobRetryRequest,
     ProviderJobSubmitRequest,
     ProviderModelCreate,
+    ProviderModelUpdate,
+    ProviderUpdate,
     WorkflowCreate,
+    WorkflowUpdate,
 )
 from backend.services.provider_jobs import (
+    create_provider_job,
     fetch_provider_job_outputs,
     get_provider_job_status,
-    create_provider_job,
+    retry_provider_job,
 )
 from backend.services.provider_registry import PROVIDERS
 
-app = FastAPI(title="ShotRebuild Studio Backend", version="0.2.0")
+app = FastAPI(title="ShotRebuild Studio Backend", version="0.3.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -63,6 +68,36 @@ def create_provider(provider: ProviderCreate) -> dict:
         (provider.name, provider.provider_type, provider.enabled, provider.config_json),
     )
     return {"id": provider_id, **provider.model_dump()}
+
+
+@app.put("/providers/{provider_name}")
+def update_provider(provider_name: str, payload: ProviderUpdate) -> dict:
+    rows = fetch_all("SELECT id, name, provider_type, enabled, config_json FROM providers WHERE name = ?", (provider_name,))
+    if not rows:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    current = rows[0]
+    execute(
+        "UPDATE providers SET provider_type = ?, enabled = ?, config_json = ? WHERE name = ?",
+        (
+            payload.provider_type if payload.provider_type is not None else current["provider_type"],
+            payload.enabled if payload.enabled is not None else current["enabled"],
+            payload.config_json if payload.config_json is not None else current["config_json"],
+            provider_name,
+        ),
+    )
+    return {"message": "updated", "provider": provider_name}
+
+
+@app.delete("/providers/{provider_name}")
+def delete_provider(provider_name: str) -> dict:
+    rows = fetch_all("SELECT id FROM providers WHERE name = ?", (provider_name,))
+    if not rows:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    provider_id = rows[0]["id"]
+    execute("DELETE FROM provider_models WHERE provider_id = ?", (provider_id,))
+    execute("DELETE FROM workflows WHERE provider_id = ?", (provider_id,))
+    execute("DELETE FROM providers WHERE id = ?", (provider_id,))
+    return {"message": "deleted", "provider": provider_name}
 
 
 @app.get("/providers/comfyui/health")
@@ -113,6 +148,37 @@ def create_model(model: ProviderModelCreate) -> dict:
     return {"id": model_id, **model.model_dump()}
 
 
+@app.put("/models/{model_id}")
+def update_model(model_id: int, payload: ProviderModelUpdate) -> dict:
+    rows = fetch_all(
+        "SELECT id, model_key, display_name, capabilities, is_default FROM provider_models WHERE id = ?",
+        (model_id,),
+    )
+    if not rows:
+        raise HTTPException(status_code=404, detail="Model not found")
+    current = rows[0]
+    execute(
+        "UPDATE provider_models SET model_key = ?, display_name = ?, capabilities = ?, is_default = ? WHERE id = ?",
+        (
+            payload.model_key if payload.model_key is not None else current["model_key"],
+            payload.display_name if payload.display_name is not None else current["display_name"],
+            payload.capabilities if payload.capabilities is not None else current["capabilities"],
+            payload.is_default if payload.is_default is not None else current["is_default"],
+            model_id,
+        ),
+    )
+    return {"message": "updated", "model_id": model_id}
+
+
+@app.delete("/models/{model_id}")
+def delete_model(model_id: int) -> dict:
+    rows = fetch_all("SELECT id FROM provider_models WHERE id = ?", (model_id,))
+    if not rows:
+        raise HTTPException(status_code=404, detail="Model not found")
+    execute("DELETE FROM provider_models WHERE id = ?", (model_id,))
+    return {"message": "deleted", "model_id": model_id}
+
+
 @app.get("/workflows")
 def list_workflows(provider: str | None = Query(default=None)) -> list[dict]:
     if provider:
@@ -145,6 +211,33 @@ def create_workflow(workflow: WorkflowCreate) -> dict:
     return {"id": workflow_id, **workflow.model_dump()}
 
 
+@app.put("/workflows/{workflow_id}")
+def update_workflow(workflow_id: int, payload: WorkflowUpdate) -> dict:
+    rows = fetch_all("SELECT id, workflow_key, name, definition_json FROM workflows WHERE id = ?", (workflow_id,))
+    if not rows:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    current = rows[0]
+    execute(
+        "UPDATE workflows SET workflow_key = ?, name = ?, definition_json = ? WHERE id = ?",
+        (
+            payload.workflow_key if payload.workflow_key is not None else current["workflow_key"],
+            payload.name if payload.name is not None else current["name"],
+            payload.definition_json if payload.definition_json is not None else current["definition_json"],
+            workflow_id,
+        ),
+    )
+    return {"message": "updated", "workflow_id": workflow_id}
+
+
+@app.delete("/workflows/{workflow_id}")
+def delete_workflow(workflow_id: int) -> dict:
+    rows = fetch_all("SELECT id FROM workflows WHERE id = ?", (workflow_id,))
+    if not rows:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    execute("DELETE FROM workflows WHERE id = ?", (workflow_id,))
+    return {"message": "deleted", "workflow_id": workflow_id}
+
+
 @app.get("/projects")
 def get_projects() -> list[dict]:
     return fetch_all("SELECT id, name, description, status, created_at FROM projects ORDER BY id DESC")
@@ -175,10 +268,20 @@ def create_asset(asset: AssetCreate) -> dict:
 
 @app.post("/providers/{provider_name}/jobs")
 def submit_provider_job(provider_name: str, request: ProviderJobSubmitRequest) -> dict:
-    payload = request.prompt
-    if request.model_key:
-        payload = {**payload, "model_key": request.model_key}
-    return create_provider_job(provider_name, payload, workflow_id=request.workflow_id)
+    return create_provider_job(
+        provider_name=provider_name,
+        payload=request.prompt,
+        workflow_id=request.workflow_id,
+        model_key=request.model_key,
+        fallback_provider=request.fallback_provider,
+        fallback_model_key=request.fallback_model_key,
+        max_retries=request.max_retries,
+    )
+
+
+@app.post("/provider_jobs/{job_id}/retry")
+def retry_job(job_id: int, request: ProviderJobRetryRequest) -> dict:
+    return retry_provider_job(job_id, request.max_retries)
 
 
 @app.get("/provider_jobs/{job_id}/status")

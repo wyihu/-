@@ -4,6 +4,7 @@ import { api } from '../services/api'
 export function WorkflowsPage() {
   const [providers, setProviders] = useState<any[]>([])
   const [selectedProvider, setSelectedProvider] = useState('')
+  const [fallbackProvider, setFallbackProvider] = useState('')
   const [models, setModels] = useState<any[]>([])
   const [workflows, setWorkflows] = useState<any[]>([])
 
@@ -11,10 +12,13 @@ export function WorkflowsPage() {
   const [name, setName] = useState('')
 
   const [selectedModelKey, setSelectedModelKey] = useState('')
+  const [fallbackModelKey, setFallbackModelKey] = useState('')
   const [selectedWorkflowId, setSelectedWorkflowId] = useState('')
+  const [maxRetries, setMaxRetries] = useState('1')
   const [promptJson, setPromptJson] = useState('{"prompt":{}}')
   const [jobId, setJobId] = useState<number | null>(null)
   const [jobStatus, setJobStatus] = useState('')
+  const [jobError, setJobError] = useState('')
   const [outputs, setOutputs] = useState('')
   const [error, setError] = useState('')
 
@@ -28,6 +32,7 @@ export function WorkflowsPage() {
     setProviders(rows)
     if (!selectedProvider && rows.length > 0) {
       setSelectedProvider(rows[0].name)
+      setFallbackProvider(rows.find((x) => x.name !== rows[0].name)?.name ?? rows[0].name)
     }
   }
 
@@ -52,6 +57,20 @@ export function WorkflowsPage() {
     }
   }, [selectedProvider])
 
+  useEffect(() => {
+    if (!jobId) return
+    const timer = setInterval(async () => {
+      try {
+        const status = await api.getProviderJobStatus(jobId)
+        setJobStatus(status.status)
+        setJobError(status.error ?? '')
+      } catch (e) {
+        setError(String(e))
+      }
+    }, 2000)
+    return () => clearInterval(timer)
+  }, [jobId])
+
   async function createWorkflow() {
     setError('')
     if (!selectedProviderRow) {
@@ -72,8 +91,15 @@ export function WorkflowsPage() {
     await loadDependentData(selectedProvider)
   }
 
+
+  async function removeWorkflow(workflowId: number) {
+    await api.deleteWorkflow(workflowId)
+    await loadDependentData(selectedProvider)
+  }
+
   async function submitJob() {
     setError('')
+    setJobError('')
     setOutputs('')
     if (selectedProvider !== 'comfyui') {
       setError('当前仅支持提交 ComfyUI 任务')
@@ -95,19 +121,25 @@ export function WorkflowsPage() {
     const submit = await api.submitProviderJob('comfyui', {
       workflow_id: Number(selectedWorkflowId),
       model_key: selectedModelKey,
+      fallback_provider: fallbackProvider || undefined,
+      fallback_model_key: fallbackModelKey || undefined,
+      max_retries: Number(maxRetries || '0'),
       prompt: parsedPrompt
     })
     setJobId(submit.job_id)
     setJobStatus(submit.status)
   }
 
-  async function refreshStatus() {
+  async function retryJob() {
     if (!jobId) {
       setError('请先提交任务')
       return
     }
-    const status = await api.getProviderJobStatus(jobId)
-    setJobStatus(status.status)
+    const retried = await api.retryProviderJob(jobId, Number(maxRetries || '0'))
+    setJobId(retried.job_id)
+    setJobStatus(retried.status)
+    setJobError('')
+    setOutputs('')
   }
 
   async function loadOutputs() {
@@ -134,7 +166,7 @@ export function WorkflowsPage() {
         <button onClick={() => createWorkflow()}>新增 Workflow</button>
       </div>
 
-      <h3>Provider / Model / Workflow 联动提交（ComfyUI）</h3>
+      <h3>任务提交（ComfyUI）</h3>
       <div>
         <select value={selectedModelKey} onChange={(e) => setSelectedModelKey(e.target.value)}>
           <option value="">请选择模型</option>
@@ -149,6 +181,19 @@ export function WorkflowsPage() {
           ))}
         </select>
       </div>
+      <div>
+        <label>Fallback Provider: </label>
+        <select value={fallbackProvider} onChange={(e) => setFallbackProvider(e.target.value)}>
+          <option value="">无</option>
+          {providers.map((provider) => (
+            <option key={provider.id} value={provider.name}>{provider.name}</option>
+          ))}
+        </select>
+        <label>Fallback Model: </label>
+        <input value={fallbackModelKey} onChange={(e) => setFallbackModelKey(e.target.value)} placeholder="fallback model_key" />
+        <label>Max Retries: </label>
+        <input value={maxRetries} onChange={(e) => setMaxRetries(e.target.value)} style={{ width: 60 }} />
+      </div>
       <textarea
         value={promptJson}
         onChange={(e) => setPromptJson(e.target.value)}
@@ -157,17 +202,18 @@ export function WorkflowsPage() {
       />
       <div>
         <button onClick={() => submitJob()}>提交任务</button>
-        <button onClick={() => refreshStatus()}>查询状态</button>
+        <button onClick={() => retryJob()}>重试任务</button>
         <button onClick={() => loadOutputs()}>获取输出</button>
       </div>
 
       {jobId && <p>当前任务ID: {jobId} / 状态: {jobStatus}</p>}
+      {jobError && <p style={{ color: 'crimson' }}>失败原因: {jobError}</p>}
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
       {outputs && <pre>{outputs}</pre>}
 
       <ul>
         {workflows.map((workflow) => (
-          <li key={`${workflow.id}-${workflow.workflow_key}`}>{workflow.provider ?? 'unknown'}: {workflow.name}</li>
+          <li key={`${workflow.id}-${workflow.workflow_key}`}>{workflow.provider ?? 'unknown'}: {workflow.name} <button onClick={() => removeWorkflow(workflow.id)}>删除</button></li>
         ))}
       </ul>
     </section>

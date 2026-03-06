@@ -56,6 +56,11 @@ export function ModelsPage() {
     await loadModels(selectedProvider)
   }
 
+  async function removeModel(modelId: number) {
+    await api.deleteModel(modelId)
+    await loadModels(selectedProvider)
+  }
+
   return (
     <section>
       <h2>模型管理页</h2>
@@ -73,7 +78,10 @@ export function ModelsPage() {
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
       <ul>
         {models.map((model) => (
-          <li key={`${model.id}-${model.model_key}`}>{model.provider}: {model.display_name}</li>
+          <li key={`${model.id}-${model.model_key}`}>
+            {model.provider}: {model.display_name}
+            <button onClick={() => removeModel(model.id)}>删除</button>
+          </li>
         ))}
       </ul>
     </section>
